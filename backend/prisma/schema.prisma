@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  seed         = "prisma/seed.js"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum BookingStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  password           String
+  image              String?  @default("")
+  hashedRefreshToken String?
+  role               Role     @default(USER)
+  cars               Car[] // One-to-many relationship with Car model
+  agent              Agent?   @relation(fields: [agentId], references: [id])
+  agentId            Int?
+  rentals            Rental[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+}
+
+model Car {
+  id               Int          @id @default(autoincrement())
+  model            String
+  brand            String
+  image            String
+  year             Int
+  category         String
+  seating_capacity Int
+  fuel_type        String
+  transmission     Transmission
+  price_per_day    Decimal
+  location         String
+  description      String
+  isAvailable      Boolean      @default(true)
+  agent            Agent?       @relation(fields: [agentId], references: [id])
+  agentId          Int?
+  user             User?        @relation(fields: [userId], references: [id])
+  userId           Int?
+  rentals          Rental[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @default(now()) @updatedAt
+}
+
+model Agent {
+  id        Int      @id @default(autoincrement())
+  name      String
+  users     User[]
+  cars      Car[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Rental {
+  id Int @id @default(autoincrement())
+
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Decimal
+  status     BookingStatus @default(PENDING)
+
+  // مين اليوزر اللي أجر؟
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  // أجر أنهي عربية؟
+  car   Car @relation(fields: [carId], references: [id])
+  carId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
