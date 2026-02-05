@@ -16,6 +16,7 @@ import { JwtGuard } from './guards/jwt.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from 'generated/prisma/enums';
 import { RefreshGuard } from './guards/refresh.guard';
+import { registerDTO } from './dtos/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +24,19 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
   ) {}
+
+  @Post('register')
+  async register(
+    @Body() data: registerDTO,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.register(data);
+    this.setCookies(res, tokens.accessToken, tokens.refreshToken);
+
+    return {
+      message: 'User registered successfully',
+    };
+  }
 
   @UseGuards(LocalGuard)
   @Post('login')
