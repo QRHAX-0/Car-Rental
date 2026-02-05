@@ -3,6 +3,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CarsModule } from './cars/cars.module';
+import { RentalModule } from './rental/rental.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { CarsModule } from './cars/cars.module';
       isGlobal: true, // يخلي env متاحة في كل المشروع
     }),
     CarsModule,
+    RentalModule,
   ],
 })
 export class AppModule {}

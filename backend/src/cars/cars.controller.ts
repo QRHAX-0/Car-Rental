@@ -4,12 +4,16 @@ import {
   Controller,
   Delete,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CarsService } from './cars.service';
 import { CarDataDTO } from './dtos/car.dto';
@@ -18,6 +22,8 @@ import type { Request } from 'express';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { Role } from 'generated/prisma/enums';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storageConfig } from 'src/common/utils/file-upload.utils';
 
 @Controller('cars')
 export class CarsController {
@@ -57,7 +63,17 @@ export class CarsController {
   @UseGuards(JwtGuard, RoleGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @Post('add-car')
-  async createCar(@Body() carData: CarDataDTO, @Req() req: Request) {
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: storageConfig('cars'),
+    }),
+  )
+  async createCar(
+    @Body() carData: CarDataDTO,
+    @UploadedFile()
+    file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
     const user = req.user as {
       name: string;
       email: string;
@@ -77,7 +93,7 @@ export class CarsController {
     }
     console.log('Logged in user:', req.user);
 
-    return await this.carsService.create(carData, finalAgentId);
+    return await this.carsService.create(carData, file.path, finalAgentId);
   }
 
   @UseGuards(JwtGuard, RoleGuard)

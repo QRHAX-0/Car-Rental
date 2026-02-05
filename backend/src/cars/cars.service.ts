@@ -7,11 +7,12 @@ import { CarDataDTO } from './dtos/car.dto';
 export class CarsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(carData: CarDataDTO, agentId: number) {
+  async create(carData: CarDataDTO, imageFile: string, agentId: number) {
     const { agentId: ignoredId, ...carDataWithoutAgentId } = carData;
     const newCar: Car = await this.prisma.car.create({
       data: {
         ...carDataWithoutAgentId,
+        image: imageFile,
         agent: { connect: { id: agentId } },
       },
     });
