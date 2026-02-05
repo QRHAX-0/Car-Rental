@@ -8,6 +8,8 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { LocalGuard } from './guards/local.guard';
 import type { Request, Response } from 'express';
@@ -17,6 +19,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from 'generated/prisma/enums';
 import { RefreshGuard } from './guards/refresh.guard';
 import { registerDTO } from './dtos/register.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storageConfig } from 'src/common/utils/file-upload.utils';
 
 @Controller('auth')
 export class AuthController {
@@ -26,11 +30,17 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: storageConfig('users'),
+    }),
+  )
   async register(
     @Body() data: registerDTO,
+    @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const tokens = await this.authService.register(data);
+    const tokens = await this.authService.register(data, file.path);
     this.setCookies(res, tokens.accessToken, tokens.refreshToken);
 
     return {
