@@ -1,0 +1,146 @@
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Req,
+  Body,
+  Get,
+  Res,
+  HttpCode,
+  HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import { LocalGuard } from './guards/local.guard';
+import type { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { JwtGuard } from './guards/jwt.guard';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Role } from 'generated/prisma/enums';
+import { RefreshGuard } from './guards/refresh.guard';
+import { registerDTO } from './dtos/register.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storageConfig } from 'src/common/utils/file-upload.utils';
+
+@Controller('auth')
+export class AuthController {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Post('register')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: storageConfig('users'),
+    }),
+  )
+  async register(
+    @Body() data: registerDTO,
+    @UploadedFile() file: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.register(data, file.path);
+    this.setCookies(res, tokens.accessToken, tokens.refreshToken);
+
+    return {
+      message: 'User registered successfully',
+    };
+  }
+
+  @UseGuards(LocalGuard)
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const user = req.user as {
+      id: number;
+      email: string;
+      name: string;
+      role: Role;
+      agencyId: number;
+    };
+    const tokens = await this.authService.login(
+      user.id,
+      user.email,
+      user.role,
+      user.name,
+      user.agencyId,
+    );
+
+    this.setCookies(res, tokens.accessToken, tokens.refreshToken);
+
+    return {
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        agencyId: user.agencyId,
+      },
+    };
+  }
+
+  @UseGuards(RefreshGuard)
+  @Post('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = req.user as {
+      id: number;
+      email: string;
+      name: string;
+      role: string;
+      agencyId: number;
+    };
+
+    const tokens = await this.authService.refresh(
+      user.id,
+      user.email,
+      user.name,
+      user.role,
+      user.agencyId,
+    );
+
+    this.setCookies(res, tokens.accessToken, tokens.refreshToken);
+    return { message: 'Refresh successful' };
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('profile')
+  async getProfile(@Req() req: Request) {
+    const user = req.user as { id: number };
+
+    const getUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        image: true,
+        agencyId: true,
+      },
+    });
+    return getUser;
+  }
+
+  private setCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+}
