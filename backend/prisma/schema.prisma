@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  seed         = "prisma/seed.js"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  AGENT
+  SUPER_ADMIN
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum BookingStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum FuelLevel {
+  EMPTY
+  QUARTER
+  HALF
+  THREE_QUARTERS
+  FULL
+}
+
+model User {
+  id                 Int     @id @default(autoincrement())
+  name               String
+  email              String  @unique
+  phoneNumber        String  @unique
+  password           String
+  image              String? @default("")
+  hashedRefreshToken String?
+  role               Role    @default(USER)
+
+  rentals Rental[] @relation("CustomerRentals")
+
+  pickupRental Rental[] @relation("PickupStaff")
+  returnRental Rental[] @relation("ReturnStaff")
+
+  agency   Agency? @relation(fields: [agencyId], references: [id])
+  agencyId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Car {
+  id              Int          @id @default(autoincrement())
+  model           String
+  brand           String
+  year            Int
+  category        String
+  seatingCapacity Int
+  fuelType        String
+  transmission    Transmission
+  mileage         Int          @default(0)
+  pricePerDay     Decimal
+  location        String
+  description     String
+  isAvailable     Boolean      @default(true)
+  agency          Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId        Int
+  rentals         Rental[]
+  images          CarImages[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+}
+
+model CarImages {
+  id    Int    @id @default(autoincrement())
+  car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+  carId Int
+  image String @default("")
+}
+
+model Agency {
+  id        Int      @id @default(autoincrement())
+  name      String
+  isActive  Boolean  @default(true)
+  logo      String   @default("")
+  members   User[]
+  cars      Car[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Rental {
+  id Int @id @default(autoincrement())
+
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Decimal
+  status     BookingStatus @default(PENDING)
+
+  car   Car @relation(fields: [carId], references: [id], onDelete: Cascade)
+  carId Int
+
+  customer   User @relation("CustomerRentals", fields: [customerId], references: [id])
+  customerId Int
+
+  pickupStaff   User? @relation("PickupStaff", fields: [pickupStaffId], references: [id])
+  pickupStaffId Int?
+
+  returnStaff   User? @relation("ReturnStaff", fields: [returnStaffId], references: [id])
+  returnStaffId Int?
+
+  startMileage Int?
+  pickupFuel   FuelLevel?
+
+  endMileage Int?
+  returnFuel FuelLevel?
+
+  notes String?
+
+  extraCharges Decimal @default(0)
+
+  returnedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
