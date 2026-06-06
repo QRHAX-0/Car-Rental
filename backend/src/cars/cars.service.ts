@@ -10,6 +10,23 @@ import * as fs from 'fs/promises';
 export class CarsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(): Promise<Car[]> {
+    return await this.prisma.car.findMany({ where: { isAvailable: true } });
+  }
+
+  async findCarById(carId: number): Promise<Car | null> {
+    return await this.prisma.car.findUnique({
+      where: { id: carId },
+      include: { images: true },
+    });
+  }
+
+  async findCarsByAgency(agencyId: number): Promise<Car[]> {
+    return await this.prisma.car.findMany({
+      where: { agencyId },
+    });
+  }
+
   async create(
     carData: CarDataDTO,
     imageFiles: Array<Express.Multer.File>,
@@ -31,19 +48,6 @@ export class CarsService {
       },
     });
     return newCar;
-  }
-
-  async remove(carId: number, agencyId?: number) {
-    const car = await this.prisma.car.findFirst({
-      where: {
-        id: carId,
-        ...((agencyId && { agencyId: agencyId }) || undefined),
-      },
-    });
-    if (!car) throw new NotFoundException('Car not found or access denied');
-
-    await this.prisma.car.delete({ where: { id: carId } });
-    return { message: 'Car removed successfully' };
   }
 
   async update(
@@ -80,6 +84,19 @@ export class CarsService {
     return updatedCar;
   }
 
+  async remove(carId: number, agencyId?: number) {
+    const car = await this.prisma.car.findFirst({
+      where: {
+        id: carId,
+        ...((agencyId && { agencyId: agencyId }) || undefined),
+      },
+    });
+    if (!car) throw new NotFoundException('Car not found or access denied');
+
+    await this.prisma.car.delete({ where: { id: carId } });
+    return { message: 'Car removed successfully' };
+  }
+
   async deleteCarImage(carId: number, imageId: number) {
     const imageRecord = await this.prisma.carImages.findFirst({
       where: { id: imageId, carId },
@@ -104,22 +121,5 @@ export class CarsService {
     }
 
     return { message: 'Image successfully deleted' };
-  }
-
-  async findAll(): Promise<Car[]> {
-    return await this.prisma.car.findMany({ where: { isAvailable: true } });
-  }
-
-  async findCarById(carId: number): Promise<Car | null> {
-    return await this.prisma.car.findUnique({
-      where: { id: carId },
-      include: { images: true },
-    });
-  }
-
-  async findCarsByAgency(agencyId: number): Promise<Car[]> {
-    return await this.prisma.car.findMany({
-      where: { agencyId },
-    });
   }
 }

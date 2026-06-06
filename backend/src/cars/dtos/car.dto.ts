@@ -14,47 +14,47 @@ import { Transmission } from 'generated/prisma/enums';
 export class CarDataDTO {
   @IsString()
   @IsNotEmpty()
-  model: string;
+  model!: string;
 
   @IsString()
   @IsNotEmpty()
-  brand: string;
+  brand!: string;
 
   @Type(() => Number)
   @IsInt()
   @Min(1900)
-  year: number;
+  year!: number;
 
   @IsString()
   @IsNotEmpty()
-  category: string;
+  category!: string;
 
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  seatingCapacity: number;
+  seatingCapacity!: number;
 
   @IsString()
   @IsNotEmpty()
-  fuelType: string;
+  fuelType!: string;
 
   @IsEnum(Transmission, {
     message: 'Transmission must be either MANUAL or AUTOMATIC',
   })
-  transmission: Transmission;
+  transmission!: Transmission;
 
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  pricePerDay: number;
+  pricePerDay!: number;
 
   @IsString()
   @IsNotEmpty()
-  location: string;
+  location!: string;
 
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @IsOptional()
   @Type(() => Boolean)

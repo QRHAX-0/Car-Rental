@@ -4,13 +4,13 @@ import { IsDate, IsNumber } from 'class-validator';
 export class CreateRent {
   @Type(() => Number)
   @IsNumber()
-  carId: number;
+  carId!: number;
 
   @Type(() => Date)
   @IsDate()
-  startDate: Date;
+  startDate!: Date;
 
   @Type(() => Date)
   @IsDate()
-  endDate: Date;
+  endDate!: Date;
 }

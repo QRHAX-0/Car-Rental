@@ -3,9 +3,9 @@ import { IsDate } from 'class-validator';
 export class searchCarsDTO {
   @Type(() => Date)
   @IsDate()
-  searchStartDate: Date;
+  searchStartDate!: Date;
 
   @Type(() => Date)
   @IsDate()
-  searchEndDate: Date;
+  searchEndDate!: Date;
 }

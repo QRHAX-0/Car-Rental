@@ -61,12 +61,7 @@ export class CarsController {
     files: Array<Express.Multer.File>,
     @Req() req: Request,
   ) {
-    const user = req.user as {
-      name: string;
-      email: string;
-      role: string;
-      agencyId: number;
-    };
+    const user = req.user as { agencyId: number };
 
     let finalAgencyId: number;
 
@@ -116,6 +111,8 @@ export class CarsController {
     return await this.carsService.remove(carId, finalagencyId);
   }
 
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @Delete(':carId/images/:imageId')
   async deleteCarImage(
     @Param('carId', ParseIntPipe) carId: number,

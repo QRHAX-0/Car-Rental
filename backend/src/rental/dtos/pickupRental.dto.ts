@@ -4,9 +4,9 @@ import { FuelLevel } from 'generated/prisma/enums';
 export class PickupRentalDto {
   @IsInt()
   @IsNotEmpty()
-  currentMileage: number;
+  currentMileage!: number;
 
   @IsEnum(FuelLevel)
   @IsNotEmpty()
-  fuelLevel: FuelLevel;
+  fuelLevel!: FuelLevel;
 }
