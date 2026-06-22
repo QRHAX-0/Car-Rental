@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 1);
+    box-shadow: 0 20px 40px rgba(0, 56, 157, 0.05);
+  }
+
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #00389d 0%, #1a4fc4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .ambient-glow {
+    background: radial-gradient(circle, rgba(26, 79, 196, 0.06) 0%, rgba(244, 246, 249, 0) 60%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .ambient-shadow {
+    box-shadow: 0 40px 40px -20px rgba(0, 0, 0, 0.04);
+  }
+
+  .car-image-container {
+    aspect-ratio: 16/10;
+  }
+}
