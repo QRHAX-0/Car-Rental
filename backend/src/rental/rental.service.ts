@@ -17,7 +17,7 @@ export class RentalService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createRent(
-    { carId, startDate, endDate }: CreateRent,
+    { carId, startDate, endDate, notes }: CreateRent,
     customerId: number,
   ) {
     if (startDate >= endDate)
@@ -61,6 +61,7 @@ export class RentalService {
         endDate,
         status: 'PENDING',
         totalPrice,
+        notes,
         customer: { connect: { id: customerId } },
         car: { connect: { id: carId } },
       },
@@ -212,5 +213,48 @@ export class RentalService {
     });
 
     return cars;
+  }
+
+  async getMyBookings(customerId: number) {
+    return this.prisma.rental.findMany({
+      where: {
+        customerId,
+      },
+      include: {
+        car: {
+          include: {
+            images: true,
+            agency: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getBookingById(rentalId: number, userId: number, userRole: string) {
+    const rental = await this.prisma.rental.findUnique({
+      where: { id: rentalId },
+      include: {
+        car: {
+          include: {
+            images: true,
+            agency: true,
+          },
+        },
+      },
+    });
+
+    if (!rental) throw new NotFoundException('Rental not found');
+
+    if (userRole === 'USER' && rental.customerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to view this booking',
+      );
+    }
+
+    return rental;
   }
 }

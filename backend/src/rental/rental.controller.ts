@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -18,12 +19,32 @@ import { PickupRentalDto } from './dtos/pickupRental.dto';
 import { ActiveUser } from 'src/common/interfaces/active-user.interface';
 import { ReturnRentalDto } from './dtos/returnRental.dto';
 import { searchCarsDTO } from './dtos/searchcars.dto';
+import { RoleGuard } from 'src/common/guards/role.guard';
 
 @Controller('rental')
 export class RentalController {
   constructor(private readonly rentalService: RentalService) {}
 
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles('USER')
+  @Get('my-bookings')
+  async getMyBookings(@Req() req: Request) {
+    const user = req.user as ActiveUser;
+    return this.rentalService.getMyBookings(user.id);
+  }
+
   @UseGuards(JwtGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN', 'AGENT', 'USER')
+  @Get(':id')
+  async getBookingById(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user as ActiveUser;
+    return await this.rentalService.getBookingById(id, user.id, user.role);
+  }
+
+  @UseGuards(JwtGuard, RoleGuard)
   @Roles('USER')
   @Post('book')
   async createRental(@Body() data: CreateRent, @Req() req: Request) {
@@ -31,7 +52,7 @@ export class RentalController {
     return await this.rentalService.createRent(data, user.id);
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, RoleGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'AGENT')
   @Patch(':id/pickup')
   async pickupCar(
@@ -43,7 +64,7 @@ export class RentalController {
     return await this.rentalService.pickupCar(rentalId, user, PickupRentalData);
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, RoleGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'AGENT')
   @Patch(':id/return')
   async returnCar(
@@ -59,8 +80,8 @@ export class RentalController {
     );
   }
 
-  @UseGuards(JwtGuard)
-  @Roles('SUPER_ADMIN', 'ADMIN', 'AGENT')
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN', 'AGENT', 'USER')
   @Patch(':id/cancel')
   async cancelCar(
     @Param('id', ParseIntPipe) rentalId: number,
@@ -70,7 +91,7 @@ export class RentalController {
     return await this.rentalService.cancelRental(rentalId, user);
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, RoleGuard)
   @HttpCode(200)
   @Post('search')
   async searchCars(@Body() { searchStartDate, searchEndDate }: searchCarsDTO) {

@@ -10,7 +10,7 @@ import { RentalModule } from './rental/rental.module';
     PrismaModule,
     AuthModule,
     ConfigModule.forRoot({
-      isGlobal: true, // يخلي env متاحة في كل المشروع
+      isGlobal: true,
     }),
     CarsModule,
     RentalModule,

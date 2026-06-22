@@ -43,15 +43,17 @@ enum FuelLevel {
 }
 
 model User {
-  id                 Int     @id @default(autoincrement())
-  name               String
-  email              String  @unique
-  phoneNumber        String?
-  password           String?
-  googleId           String? @unique
-  image              String? @default("")
-  hashedRefreshToken String?
-  role               Role    @default(USER)
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  email                String    @unique
+  phoneNumber          String?
+  password             String?
+  googleId             String?   @unique
+  image                String?   @default("")
+  hashedRefreshToken   String?
+  role                 Role      @default(USER)
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
 
   rentals Rental[] @relation("CustomerRentals")
 

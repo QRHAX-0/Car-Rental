@@ -10,14 +10,27 @@ import * as fs from 'fs/promises';
 export class CarsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<Car[]> {
-    return await this.prisma.car.findMany({ where: { isAvailable: true } });
+  async findAll(limit?: number): Promise<Car[]> {
+    return await this.prisma.car.findMany({
+      take: limit,
+      where: { isAvailable: true },
+      include: {
+        images: true,
+        agency: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   async findCarById(carId: number): Promise<Car | null> {
     return await this.prisma.car.findUnique({
       where: { id: carId },
-      include: { images: true },
+      include: {
+        images: true,
+        agency: true,
+      },
     });
   }
 

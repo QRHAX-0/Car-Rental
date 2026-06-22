@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  Patch,
 } from '@nestjs/common';
 import { LocalGuard } from './guards/local.guard';
 import type { Request, Response } from 'express';
@@ -22,6 +23,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { storageConfig } from 'src/common/utils/file-upload.utils';
 import { GoogleGuard } from './guards/google.guard';
 import { PayloadDto } from './dtos/payload.dto';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -78,6 +80,20 @@ export class AuthController {
     };
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return await this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return await this.authService.resetPassword(email, token, newPassword);
+  }
+
   @UseGuards(RefreshGuard)
   @Post('refresh')
   async refresh(
@@ -118,10 +134,22 @@ export class AuthController {
         role: true,
         image: true,
         agencyId: true,
+        phoneNumber: true,
       },
     });
     return getUser;
   }
+
+  @UseGuards(JwtGuard)
+  @Patch('profile')
+  async updateProfile(
+    @Req() req: Request,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    const user = req.user as PayloadDto;
+    return await this.authService.updateProfile(user.id, updateProfileDto);
+  }
+
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
     res.cookie('access_token', accessToken, {
       httpOnly: true,

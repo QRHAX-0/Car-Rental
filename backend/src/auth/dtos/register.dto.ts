@@ -5,6 +5,7 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsOptional,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -21,12 +22,12 @@ export class registerDTO {
   @Transform(({ value }) => value.toLowerCase().trim())
   email!: string;
 
-  @IsNotEmpty({ message: 'Phone number is required' })
+  @IsOptional()
   @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
     message: 'Phone number must be a valid format (e.g., +20123456789)',
   })
-  phoneNumber!: string;
+  phoneNumber?: string;
 
   @IsNotEmpty({ message: 'Password is required' })
   @IsString()

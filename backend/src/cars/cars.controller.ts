@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseGuards,
@@ -31,8 +32,8 @@ export class CarsController {
   // -------------- Public Routes --------------
 
   @Get('')
-  async getAllCars() {
-    return await this.carsService.findAll();
+  async getAllCars(@Query('limit') limit?: string) {
+    return await this.carsService.findAll(limit ? +limit : undefined);
   }
 
   @Get(':id')

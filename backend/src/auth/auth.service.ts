@@ -9,6 +9,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PayloadDto } from './dtos/payload.dto';
 import { registerDTO } from './dtos/register.dto';
 import { Role } from 'generated/prisma/enums';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +126,89 @@ export class AuthService {
     return tokens;
   }
 
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // بنرجع رسالة نجاح وهمية لدواعي الأمان عشان الهاكرز ميعرفوش الإيميلات المسجلة
+      return {
+        message: 'If this email is registered, a reset link has been sent.',
+      };
+    }
+
+    // 1. توليد رمز عشوائي
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedResetToken = await bcrypt.hash(resetToken, 10);
+
+    // 2. تحديد وقت الانتهاء (15 دقيقة من دلوقتي)
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 15);
+
+    // 3. حفظ الرمز في الداتا بيز
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: hashedResetToken,
+        resetPasswordExpires: expires,
+      },
+    });
+
+    // 4. إعداد الـ Transporter بتاع الإيميل (هتحتاج تحط بياناتك الحقيقية هنا لاحقاً)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // أو أي خدمة تانية
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `http://localhost:5174/reset-password?token=${resetToken}&email=${email}`;
+
+    await transporter.sendMail({
+      from: '"LUXE Rental" <noreply@luxerental.com>',
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `
+        <h3>Hello ${user.name},</h3>
+        <p>You requested a password reset. Click the link below to set a new password:</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>This link is valid for 15 minutes. If you didn't request this, please ignore this email.</p>
+      `,
+    });
+
+    return {
+      message: 'If this email is registered, a reset link has been sent.',
+    };
+  }
+
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user || !user.resetPasswordToken || !user.resetPasswordExpires) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (new Date() > user.resetPasswordExpires) {
+      throw new UnauthorizedException('Reset token has expired');
+    }
+
+    const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
+    if (!isTokenValid) {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+
+    const hashPass = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashPass,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      },
+    });
+
+    return { message: 'Password reset successful. You can now login.' };
+  }
+
   async refresh(user: PayloadDto) {
     const tokens = await this.generateTokens(user);
     await this.updateRtHash(user.id, tokens.refreshToken);
@@ -174,5 +260,26 @@ export class AuthService {
         hashedRefreshToken,
       },
     });
+  }
+
+  async updateProfile(userId: number, data: UpdateProfileDto) {
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: data.name,
+        phoneNumber: data.phoneNumber,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        image: true,
+        agencyId: true,
+        phoneNumber: true,
+      },
+    });
+
+    return updatedUser;
   }
 }
