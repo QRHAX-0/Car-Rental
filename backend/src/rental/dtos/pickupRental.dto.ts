@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
-import { FuelLevel } from 'generated/prisma/enums';
+import { FuelLevel } from '@prisma/client';
 
 export class PickupRentalDto {
   @IsInt()

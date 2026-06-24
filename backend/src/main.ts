@@ -13,9 +13,10 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: 'http://localhost:5174', // ده رابط الفرونت إند بتاعك بتاع Vite
+    origin: ['http://localhost:5174', 'https://luxe-car-rental.vercel.app'], // ده رابط الفرونت إند بتاعك بتاع Vite
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();

@@ -11,15 +11,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RentalService } from './rental.service';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { Roles } from 'src/common/decorators/role.decorator';
+import { JwtGuard } from '../auth/guards/jwt.guard';
+import { Roles } from '../common/decorators/role.decorator';
 import type { Request } from 'express';
 import { CreateRent } from './dtos/createRental';
 import { PickupRentalDto } from './dtos/pickupRental.dto';
-import { ActiveUser } from 'src/common/interfaces/active-user.interface';
+import { ActiveUser } from '../common/interfaces/active-user.interface';
 import { ReturnRentalDto } from './dtos/returnRental.dto';
 import { searchCarsDTO } from './dtos/searchcars.dto';
-import { RoleGuard } from 'src/common/guards/role.guard';
+import { RoleGuard } from '../common/guards/role.guard';
 
 @Controller('rental')
 export class RentalController {

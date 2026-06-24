@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CarsService } from './cars.service';
 import { CarsController } from './cars.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { JwtAuthStrategy } from 'src/auth/strategies/jwt.strategy';
+import { PrismaModule } from '../prisma/prisma.module';
+import { JwtAuthStrategy } from '../auth/strategies/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({

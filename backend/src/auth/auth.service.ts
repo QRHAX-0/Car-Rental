@@ -3,12 +3,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { PayloadDto } from './dtos/payload.dto';
 import { registerDTO } from './dtos/register.dto';
-import { Role } from 'generated/prisma/enums';
+import { Role } from '@prisma/client';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';

@@ -5,10 +5,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateRent } from './dtos/createRental';
 import { PickupRentalDto } from './dtos/pickupRental.dto';
-import { ActiveUser } from 'src/common/interfaces/active-user.interface';
+import { ActiveUser } from '../common/interfaces/active-user.interface';
 import { ReturnRentalDto } from './dtos/returnRental.dto';
 import { searchCarsDTO } from './dtos/searchcars.dto';
 

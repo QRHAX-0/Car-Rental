@@ -7,7 +7,7 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Role } from 'generated/prisma/enums';
+import { Role } from '@prisma/client';
 
 export class PayloadDto {
   @IsNotEmpty({ message: 'ID is required' })

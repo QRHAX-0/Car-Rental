@@ -16,14 +16,14 @@ import { LocalGuard } from './guards/local.guard';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { RefreshGuard } from './guards/refresh.guard';
 import { registerDTO } from './dtos/register.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { storageConfig } from 'src/common/utils/file-upload.utils';
+import { storageConfig } from '../common/utils/file-upload.utils';
 import { GoogleGuard } from './guards/google.guard';
 import { PayloadDto } from './dtos/payload.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
@@ -46,7 +46,9 @@ export class AuthController {
       req.user,
     );
     this.setCookies(res, accessToken, refreshToken);
-    return res.redirect('http://localhost:5174/');
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    return res.redirect(`${frontendUrl}/`);
   }
 
   @Post('register')

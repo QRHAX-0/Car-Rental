@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Transmission } from 'generated/prisma/enums';
+import { Transmission } from '@prisma/client';
 
 export class UpdateCarDataDTO {
   @IsOptional()

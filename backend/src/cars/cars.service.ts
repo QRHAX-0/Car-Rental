@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CarDataDTO } from './dtos/car.dto';
-import { Car } from 'generated/prisma/client';
+import { Car } from '@prisma/client';
 import { UpdateCarDataDTO } from './dtos/updateCar.dto';
 import path from 'path';
 import * as fs from 'fs/promises';

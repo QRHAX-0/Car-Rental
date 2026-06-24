@@ -16,13 +16,13 @@ import {
 } from '@nestjs/common';
 import { CarsService } from './cars.service';
 import { CarDataDTO } from './dtos/car.dto';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 import type { Request } from 'express';
-import { RoleGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorator';
-import { Role } from 'generated/prisma/enums';
+import { RoleGuard } from '../common/guards/role.guard';
+import { Roles } from '../common/decorators/role.decorator';
+import { Role } from '@prisma/client';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { storageConfig } from 'src/common/utils/file-upload.utils';
+import { storageConfig } from '../common/utils/file-upload.utils';
 import { UpdateCarDataDTO } from './dtos/updateCar.dto';
 
 @Controller('cars')
