@@ -161,7 +161,8 @@ export class AuthService {
       },
     });
 
-    const resetUrl = `http://localhost:5174/reset-password?token=${resetToken}&email=${email}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}&email=${email}`;
 
     await transporter.sendMail({
       from: '"LUXE Rental" <noreply@luxerental.com>',

@@ -2,7 +2,6 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/utils/api";
-import { motion } from "framer-motion";
 
 export default function BookingDetails() {
   const { id } = useParams();
