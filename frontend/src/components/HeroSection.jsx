@@ -89,12 +89,15 @@ export default function HeroSection() {
             >
               EXPLORE FLEET
             </button>
-            <button className="flex items-center gap-2 font-label-bold text-label-bold text-primary group">
+            {/* <button
+              onClick={() => navigate("/cars")}
+              className="flex items-center gap-2 font-label-bold text-label-bold text-primary group"
+            >
               VIEW SPECIAL OFFERS
               <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">
                 arrow_forward
               </span>
-            </button>
+            </button> */}
           </motion.div>
         </motion.div>
 

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/material-symbols-outlined": "^5.2.45",
     "@tanstack/react-query": "^5.101.0",
     "axios": "^1.17.0",
     "framer-motion": "^12.38.0",
