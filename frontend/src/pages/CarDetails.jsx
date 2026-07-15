@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate, useLocation } from "react-router-dom"; // --- NEW: useLocation ---
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api } from "@/utils/api";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -10,7 +10,6 @@ const fadeInUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-// --- NEW: دالة عشان تمنع اختيار تاريخ في الماضي بتوقيت اليوزر المحلي ---
 const getLocalMinDateTime = () => {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -20,10 +19,18 @@ const getLocalMinDateTime = () => {
 export default function CarDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // --- NEW ---
+  const location = useLocation();
 
-  // --- NEW: استلام اللوكيشن المحفوظ لو موجود ---
   const savedPickupLocation = location.state?.pickupLocation || "";
+
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const res = await api.get("/auth/profile");
+      return res.data;
+    },
+    retry: false,
+  });
 
   const {
     data: car,
@@ -37,7 +44,6 @@ export default function CarDetails() {
     },
   });
 
-  // --- NEW: ضفنا الـ pickupLocation للستيت ---
   const [bookingData, setBookingData] = useState({
     pickupLocation: savedPickupLocation,
     pickupDate: "",
@@ -65,7 +71,7 @@ export default function CarDetails() {
 
   const bookMutation = useMutation({
     mutationFn: async (newBooking) => {
-      const res = await api.post("/rental/book", newBooking);
+      const res = await api.post("/rental/book", newBooking); // تأكد إن الـ Endpoint ده متطابق مع الباك إند
       return res.data;
     },
     onSuccess: () => {
@@ -83,7 +89,12 @@ export default function CarDetails() {
   const handleBookingSubmit = (e) => {
     e.preventDefault();
 
-    // --- NEW: دمج اللوكيشن جوه الملاحظات عشان الباك إند يقبلها ---
+    // --- NEW: حماية إضافية في الفرونت إند تمنع الريكويست لو مش متوثق ---
+    if (userProfile && !userProfile.isVerified) {
+      toast.error("Please verify your account to proceed with booking.");
+      return;
+    }
+
     const finalNotes = bookingData.pickupLocation
       ? `Pick-up Location: ${bookingData.pickupLocation}\n--- \n${bookingData.notes}`
       : bookingData.notes;
@@ -124,14 +135,12 @@ export default function CarDetails() {
           "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80",
         ];
 
-  // --- NEW: حساب التكلفة الديناميكية بناءً على التواريخ ---
   let calculatedDays = 0;
   let totalPrice = 0;
   if (bookingData.pickupDate && bookingData.returnDate) {
     const start = new Date(bookingData.pickupDate);
     const end = new Date(bookingData.returnDate);
     if (end > start) {
-      // حساب عدد الأيام (على الأقل يوم واحد)
       calculatedDays = Math.max(
         1,
         Math.ceil((end - start) / (1000 * 60 * 60 * 24)),
@@ -139,6 +148,10 @@ export default function CarDetails() {
       totalPrice = calculatedDays * Number(car.pricePerDay);
     }
   }
+
+  // --- NEW: تحديد حالة زرار الحجز ---
+  const isUserUnverified = userProfile && !userProfile.isVerified;
+  const isBookingDisabled = bookMutation.isPending || isUserUnverified;
 
   return (
     <main className="min-h-screen pt-32 pb-20 bg-background px-6">
@@ -157,7 +170,6 @@ export default function CarDetails() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-7">
-            {/* ... حاوية الصور زي ما هي بالظبط ... */}
             <motion.div
               initial="hidden"
               animate="visible"
@@ -194,7 +206,6 @@ export default function CarDetails() {
               )}
             </motion.div>
 
-            {/* ... التفاصيل والمواصفات زي ما هي ... */}
             <motion.div
               initial="hidden"
               animate="visible"
@@ -214,16 +225,16 @@ export default function CarDetails() {
               </div>
 
               <div className="prose max-w-none mb-8">
-                <p className="font-body-lg text-body-lg text-secondary leading-relaxed">
-                  {car.description}
-                </p>
+                <ul className="list-disc list-inside space-y-2 text-secondary font-body-lg">
+                  {car.description.split("\n").map((point, index) => (
+                    <li key={index}>{point}</li>
+                  ))}
+                </ul>
               </div>
 
-              {/* --- NEW: كارت بيانات الشركة (Agency) --- */}
               {car.agency && (
                 <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-100 ambient-shadow flex items-center gap-4">
                   <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xl uppercase">
-                    {/* بناخد أول حرف من اسم الشركة كلوجو مبدئي */}
                     {car.agency.name.charAt(0)}
                   </div>
                   <div>
@@ -299,7 +310,6 @@ export default function CarDetails() {
                   </div>
                 </div>
 
-                {/* --- NEW: عرض السعر الإجمالي لو اليوزر اختار تواريخ --- */}
                 {totalPrice > 0 && (
                   <div className="text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
                     <p className="text-xs text-secondary font-label-bold mb-1">
@@ -313,7 +323,6 @@ export default function CarDetails() {
               </div>
 
               <form onSubmit={handleBookingSubmit} className="space-y-6">
-                {/* --- NEW: حقل اللوكيشن بيعرض اللي اتسحب من الـ Home --- */}
                 <div className="space-y-2">
                   <label className="font-label-bold text-xs text-on-surface uppercase tracking-wider">
                     Pick-up Location
@@ -335,7 +344,7 @@ export default function CarDetails() {
                   <input
                     type="datetime-local"
                     name="pickupDate"
-                    min={getLocalMinDateTime()} // --- NEW: قفل التواريخ القديمة ---
+                    min={getLocalMinDateTime()}
                     onChange={handleInputChange}
                     className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body text-sm"
                     required
@@ -349,7 +358,7 @@ export default function CarDetails() {
                   <input
                     type="datetime-local"
                     name="returnDate"
-                    min={bookingData.pickupDate || getLocalMinDateTime()} // --- NEW: قفل تاريخ العودة قبل تاريخ الاستلام ---
+                    min={bookingData.pickupDate || getLocalMinDateTime()}
                     onChange={handleInputChange}
                     className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body text-sm"
                     required
@@ -370,14 +379,27 @@ export default function CarDetails() {
                   ></textarea>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 flex flex-col gap-3">
+                  {/* --- NEW: رسالة التنبيه لو الحساب مش متوثق --- */}
+                  {isUserUnverified && (
+                    <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-sm font-semibold">
+                      <span className="material-symbols-outlined text-amber-500">
+                        warning
+                      </span>
+                      <p>
+                        Your account is pending verification. You cannot book at
+                        this time.
+                      </p>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    disabled={bookMutation.isPending}
+                    disabled={isBookingDisabled}
                     className={`w-full text-white py-5 rounded-full font-label-bold text-label-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20
                       ${
-                        bookMutation.isPending
-                          ? "bg-primary/70 cursor-not-allowed"
+                        isBookingDisabled
+                          ? "bg-slate-400 cursor-not-allowed" // لون الزرار بيتغير لو معطل
                           : "bg-primary hover:opacity-90 active:scale-[0.98]"
                       }`}
                   >
@@ -394,7 +416,7 @@ export default function CarDetails() {
                   </button>
                 </div>
                 <p className="text-center text-[10px] text-secondary uppercase tracking-widest font-medium">
-                  Instant confirmation for members
+                  Instant confirmation for verified members
                 </p>
               </form>
             </motion.div>

@@ -22,7 +22,7 @@ const staggerContainer = {
 
 export default function PopularCarsGrid() {
   const {
-    data: featuredCars = [],
+    data,
     isError,
     isLoading,
   } = useQuery({
@@ -32,6 +32,8 @@ export default function PopularCarsGrid() {
       return res.data;
     },
   });
+
+  const featuredCars = data?.cars || [];
 
   if (isLoading) {
     return (
@@ -43,7 +45,6 @@ export default function PopularCarsGrid() {
     );
   }
 
-  // 4. حماية في حالة الـ Error
   if (isError) {
     return (
       <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-background">
@@ -53,9 +54,6 @@ export default function PopularCarsGrid() {
       </div>
     );
   }
-
-  // Only show the first 3 cars on the home page
-  // const featuredCars = cars.slice(0, 3);
 
   return (
     <section className="py-[120px] max-w-7xl mx-auto px-6">

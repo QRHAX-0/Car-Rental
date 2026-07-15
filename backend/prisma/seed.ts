@@ -157,13 +157,16 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description:
-        'The ultimate luxury sedan experience. Perfect for VIP transport.',
+      description: `Engine: 3.0L Inline-6 Turbo with EQ Boost
+Horsepower: 429 hp @ 6100 rpm
+Interior: Exclusive Nappa Leather with ambient lighting
+Tech: 12.8-inch OLED touchscreen & Burmester 3D Surround Sound
+Safety: Active Distance Assist DISTRONIC`,
       agencyId: agencyAlpha.id,
       images: [
-        'https://loremflickr.com/800/500/mercedes?lock=1',
-        'https://loremflickr.com/800/500/mercedes?lock=2',
-        'https://loremflickr.com/800/500/mercedes?lock=3',
+        'https://images.unsplash.com/photo-1622200294738-765f14e21262?q=80&w=1000',
+        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1000',
+        'https://images.unsplash.com/photo-1629897159744-884279ba858c?q=80&w=1000',
       ],
     },
     {
@@ -176,13 +179,15 @@ async function main() {
       fuelType: 'Electric',
       transmission: Transmission.AUTOMATIC,
       location: 'JFK International Airport',
-      description:
-        'Experience the future of driving. 0 to 60 mph in 1.99 seconds.',
+      description: `Acceleration: 0 to 60 mph in 1.99 seconds
+Range: Up to 396 miles per charge
+Drivetrain: Tri-Motor All-Wheel Drive (1,020 hp)
+Features: Yoke steering, 17-inch cinematic display
+Autopilot: Full Self-Driving Capability included`,
       agencyId: agencyAlpha.id,
       images: [
-        'https://loremflickr.com/800/500/tesla?lock=1',
-        'https://loremflickr.com/800/500/tesla?lock=2',
-        'https://loremflickr.com/800/500/tesla?lock=3',
+        'https://images.unsplash.com/photo-1617704548623-340376566718?q=80&w=1000',
+        'https://images.unsplash.com/photo-1604014237800-1c9102c219da?q=80&w=1000',
       ],
     },
     {
@@ -195,12 +200,15 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description: 'A naturally aspirated V10 engine roaring with power.',
+      description: `Engine: Naturally Aspirated 5.2L V10
+Top Speed: 202 mph (325 km/h)
+Drive: All-Wheel Drive with rear mechanical self-locking differential
+Interior: Alcantara and Carbon Fiber trim
+Exhaust: Sport exhaust system with a roaring signature sound`,
       agencyId: agencyAlpha.id,
       images: [
-        'https://loremflickr.com/800/500/lamborghini?lock=1',
-        'https://loremflickr.com/800/500/lamborghini?lock=2',
-        'https://loremflickr.com/800/500/lamborghini?lock=3',
+        'https://images.unsplash.com/photo-1620854497046-646a2a07c374?q=80&w=1000',
+        'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?q=80&w=1000',
       ],
     },
 
@@ -215,7 +223,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Brooklyn, NY',
-      description: 'Pure driving dynamics and timeless design.',
+      description: `Engine: 3.0L Twin-Turbo Flat-6
+Horsepower: 443 hp
+Acceleration: 0 to 60 mph in 3.5 seconds
+Transmission: 8-speed Porsche Doppelkupplung (PDK)
+Interior: 14-way Sport Seats with memory package`,
       agencyId: agencyBeta.id,
       images: [
         'https://loremflickr.com/800/500/porsche?lock=1',
@@ -233,7 +245,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Queens, NY',
-      description: 'Whisper-quiet luxury providing a magic carpet ride.',
+      description: `Engine: 6.75L Twin-Turbo V12
+Ride: Planar Suspension System for a magic carpet ride
+Interior: Starlight Headliner and open-pore wood trim
+Cabin: Whisper-quiet acoustic insulation
+Doors: Power-closing coach doors`,
       agencyId: agencyBeta.id,
       images: [
         'https://loremflickr.com/800/500/rollsroyce?lock=1',
@@ -251,7 +267,11 @@ async function main() {
       fuelType: 'Electric',
       transmission: Transmission.AUTOMATIC,
       location: 'JFK International Airport',
-      description: 'Sleek, silent, and incredibly fast electric hypercar.',
+      description: `Power: Dual Synchronous Electric Motors
+Horsepower: Up to 637 hp with boost engaged
+Acceleration: 0 to 60 mph in 3.1 seconds
+Charging: 800-volt architecture for ultra-fast charging
+Design: Carbon fiber roof and Matrix-design LED headlights`,
       agencyId: agencyBeta.id,
       images: [
         'https://loremflickr.com/800/500/audi?lock=1',
@@ -271,8 +291,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Brooklyn, NY',
-      description:
-        'The perfect blend of a daily driver and track-ready monster.',
+      description: `Engine: 4.4L TwinPower Turbo V8
+Horsepower: 617 hp
+Drivetrain: M xDrive All-Wheel Drive with 2WD mode
+Exhaust: M Sport Exhaust System
+Tech: Head-up display & Harman Kardon surround sound`,
       agencyId: agencyGamma.id,
       images: [
         'https://loremflickr.com/800/500/bmw?lock=1',
@@ -290,7 +313,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description: 'Travel across the city in absolute supreme comfort.',
+      description: `Engine: 4.0L Twin-Turbocharged V8
+Interior: Hand-crafted leather and sustainable veneers
+Audio: Naim for Bentley 2200W premium audio system
+Ride: Active All-Wheel Drive with air suspension
+Display: Bentley Rotating Display`,
       agencyId: agencyGamma.id,
       images: [
         'https://loremflickr.com/800/500/bentley?lock=1',
@@ -308,8 +335,11 @@ async function main() {
       fuelType: 'Electric',
       transmission: Transmission.AUTOMATIC,
       location: 'Brooklyn, NY',
-      description:
-        'The Taycan redefines what a fully electric sports sedan feels like.',
+      description: `Power: Dual electric motors with Launch Control
+Horsepower: Up to 750 hp (Overboost Power)
+Acceleration: 0 to 60 mph in 2.6 seconds
+Brakes: Porsche Ceramic Composite Brakes (PCCB)
+Display: Curved 16.8-inch digital display for the driver`,
       agencyId: agencyGamma.id,
       images: [
         'https://loremflickr.com/800/500/porsche?lock=4',
@@ -329,7 +359,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Staten Island, NY',
-      description: 'Commanding presence and peerless refinement.',
+      description: `Engine: 4.4L Twin-Turbo V8
+Comfort: 24-way heated and cooled massage front seats
+Capability: Terrain Response 2 with all-wheel steering
+Audio: Meridian Signature Sound System (35 speakers)
+Design: Flush deployable door handles and panoramic roof`,
       agencyId: agencyDelta.id,
       images: [
         'https://loremflickr.com/800/500/rangerover?lock=1',
@@ -347,7 +381,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description: 'Ferociously fast yet beautifully elegant supercar.',
+      description: `Engine: 4.0L Twin-Turbo V8
+Horsepower: 710 hp
+Design: Iconic Twin-Hinged Dihedral Doors
+Aerodynamics: Active rear spoiler with air brake functionality
+Chassis: Carbon fiber Monocage II for extreme rigidity`,
       agencyId: agencyDelta.id,
       images: [
         'https://loremflickr.com/800/500/mclaren?lock=1',
@@ -365,7 +403,11 @@ async function main() {
       fuelType: 'Electric',
       transmission: Transmission.AUTOMATIC,
       location: 'Queens, NY',
-      description: 'Setting new standards for EV range and luxury.',
+      description: `Range: EPA-estimated 520 miles on a single charge
+Power: Dual Motor All-Wheel Drive (1,111 hp)
+Interior: Glass Canopy roof for expansive views
+Tech: 34-inch Glass Cockpit curved display
+Charging: Adds 300 miles of range in just 20 minutes`,
       agencyId: agencyDelta.id,
       images: [
         'https://loremflickr.com/800/500/lucid?lock=1',
@@ -385,8 +427,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description:
-        'Features the most powerful V8 ever mounted in a non-special series.',
+      description: `Engine: 3.9L Twin-Turbo V8 (Award-winning)
+Horsepower: 710 hp @ 8000 rpm
+Acceleration: 0 to 62 mph in 2.9 seconds
+Handling: Ferrari Dynamic Enhancer (FDE+)
+Design: S-Duct front aero and lexan rear screen`,
       agencyId: agencyOmega.id,
       images: [
         'https://loremflickr.com/800/500/ferrari?lock=1',
@@ -404,8 +449,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Brooklyn, NY',
-      description:
-        'Unmistakable design paired with an earth-shattering AMG V8 biturbo engine.',
+      description: `Engine: Handcrafted 4.0L V8 Biturbo
+Horsepower: 577 hp & 627 lb-ft of torque
+Drive: AMG Performance 4MATIC All-Wheel Drive
+Exhaust: Side-pipe exhaust system with adjustable flaps
+Interior: G-Class specific Manufaktur leather and trim`,
       agencyId: agencyOmega.id,
       images: [
         'https://loremflickr.com/800/500/gwagon?lock=1',
@@ -423,7 +471,11 @@ async function main() {
       fuelType: 'Petrol',
       transmission: Transmission.AUTOMATIC,
       location: 'Manhattan, NY',
-      description: 'British elegance meets breathtaking performance.',
+      description: `Engine: 4.0L Twin-Turbo V8
+Horsepower: 528 hp
+Design: Clamshell hood and Aston Martin Aeroblade
+Interior: Brogue detailing and full-grain leather
+Tech: 360-degree bird's-eye camera system`,
       agencyId: agencyOmega.id,
       images: [
         'https://loremflickr.com/800/500/astonmartin?lock=1',

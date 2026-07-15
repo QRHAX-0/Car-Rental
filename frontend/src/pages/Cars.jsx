@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom"; // --- NEW: استيراد useLocation ---
+import { useLocation } from "react-router-dom";
 import CarCard from "../components/CarCard";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/utils/api";
@@ -8,48 +8,45 @@ import { api } from "@/utils/api";
 const categories = ["ALL", "LUXURY", "ELECTRIC", "SPORT"];
 
 export default function Cars() {
-  const location = useLocation(); // --- NEW: سحب الداتا من الرابط ---
+  const location = useLocation();
 
-  // --- NEW: استلام الفئة واللوكيشن من الصفحة الرئيسية ---
   const incomingCategory = location.state?.selectedCategory || "ALL";
   const savedPickupLocation = location.state?.pickupLocation || "";
 
-  // الستيت بتاخد القيمة اللي جاية من بره كقيمة مبدئية
   const [activeCategory, setActiveCategory] = useState(incomingCategory);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  // --- NEW: تحديث الستيت لو اليوزر داس بحث تاني وهو جوه الصفحة ---
   useEffect(() => {
     if (location.state?.selectedCategory) {
       setActiveCategory(location.state.selectedCategory);
+      setCurrentPage(1);
     }
   }, [location.state]);
 
-  const {
-    data: cars = [],
-    isError,
-    isLoading,
-  } = useQuery({
-    queryKey: ["cars"],
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    setCurrentPage(1); 
+  };
+
+  const { data, isError, isLoading } = useQuery({
+    queryKey: ["cars", currentPage, activeCategory],
     queryFn: async () => {
-      const res = await api.get("/cars");
+      const categoryParam =
+        activeCategory !== "ALL" ? `&category=${activeCategory}` : "";
+      const res = await api.get(
+        `/cars?page=${currentPage}&limit=${itemsPerPage}${categoryParam}`,
+      );
       return res.data;
     },
+    keepPreviousData: true,
   });
 
-  // فلترة ذكية بتتجاهل حالة الحروف والمسافات
-  const filteredCars =
-    activeCategory === "ALL"
-      ? cars
-      : cars.filter((car) => {
-          if (!car.category) return false;
+  const carsList = data?.cars || [];
+  const totalPages = data?.totalPages || 1;
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-          const normalizedDbCategory = car.category.toUpperCase().trim();
-          const normalizedActiveCategory = activeCategory.toUpperCase().trim();
-
-          return normalizedDbCategory === normalizedActiveCategory;
-        });
-
-  if (isLoading) {
+  if (isLoading && carsList.length === 0) {
     return (
       <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-background">
         <span className="material-symbols-outlined animate-spin text-5xl text-primary">
@@ -87,7 +84,7 @@ export default function Cars() {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => handleCategoryChange(category)}
               className={`px-6 py-2 rounded-full font-label-bold text-sm tracking-wider uppercase transition-all duration-300 ${
                 activeCategory === category
                   ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105"
@@ -100,28 +97,71 @@ export default function Cars() {
         </div>
 
         {/* Cars Grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          <AnimatePresence>
-            {filteredCars.map((car) => (
-              <motion.div
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${currentPage}-${activeCategory}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {carsList.map((car) => (
+              <CarCard
                 key={car.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-              >
-                {/* --- NEW: بنمرر اللوكيشن للكارت عشان يكمل الرحلة --- */}
-                <CarCard car={car} savedLocation={savedPickupLocation} />
-              </motion.div>
+                car={car}
+                savedLocation={savedPickupLocation}
+              />
             ))}
-          </AnimatePresence>
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
 
-        {filteredCars.length === 0 && (
+        {/* Square Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg font-label-bold transition-all ${
+                currentPage === 1
+                  ? "bg-slate-50 text-slate-300 cursor-not-allowed border border-transparent"
+                  : "bg-white border border-slate-200 text-secondary hover:border-primary hover:text-primary"
+              }`}
+            >
+              Prev
+            </button>
+
+            {pageNumbers.map((number) => (
+              <button
+                key={number}
+                onClick={() => setCurrentPage(number)}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg font-label-bold transition-all ${
+                  currentPage === number
+                    ? "bg-primary text-white shadow-md shadow-primary/20"
+                    : "bg-white border border-slate-200 text-secondary hover:border-primary hover:text-primary"
+                }`}
+              >
+                {number}
+              </button>
+            ))}
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-lg font-label-bold transition-all ${
+                currentPage === totalPages
+                  ? "bg-slate-50 text-slate-300 cursor-not-allowed border border-transparent"
+                  : "bg-white border border-slate-200 text-secondary hover:border-primary hover:text-primary"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {carsList.length === 0 && (
           <div className="text-center py-20 text-secondary font-body-lg">
             No vehicles found in this category.
           </div>

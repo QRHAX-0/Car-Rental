@@ -137,6 +137,7 @@ export class AuthController {
         image: true,
         agencyId: true,
         phoneNumber: true,
+        isVerified: true,
       },
     });
     return getUser;
@@ -150,6 +151,12 @@ export class AuthController {
   ) {
     const user = req.user as PayloadDto;
     return await this.authService.updateProfile(user.id, updateProfileDto);
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch('toggle-verify')
+  async toggleVerification(@Req() req) {
+    return await this.authService.toggleVerification(req.user.id);
   }
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {

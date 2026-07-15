@@ -20,7 +20,7 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import type { Request } from 'express';
 import { RoleGuard } from '../common/guards/role.guard';
 import { Roles } from '../common/decorators/role.decorator';
-import { Role } from '@prisma/client';
+import { CarCategory, Role } from '@prisma/client';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { storageConfig } from '../common/utils/file-upload.utils';
 import { UpdateCarDataDTO } from './dtos/updateCar.dto';
@@ -32,8 +32,16 @@ export class CarsController {
   // -------------- Public Routes --------------
 
   @Get('')
-  async getAllCars(@Query('limit') limit?: string) {
-    return await this.carsService.findAll(limit ? +limit : undefined);
+  async getAllCars(
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+    @Query('category') category?: CarCategory,
+  ) {
+    return await this.carsService.findAll(
+      limit ? +limit : 6,
+      page ? +page : 1,
+      category,
+    );
   }
 
   @Get(':id')

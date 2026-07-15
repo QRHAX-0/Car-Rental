@@ -1,27 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CarDataDTO } from './dtos/car.dto';
-import { Car } from '@prisma/client';
+import { Car, CarCategory } from '@prisma/client';
 import { UpdateCarDataDTO } from './dtos/updateCar.dto';
-import path from 'path';
+import * as path from 'path';
 import * as fs from 'fs/promises';
 
 @Injectable()
 export class CarsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(limit?: number): Promise<Car[]> {
-    return await this.prisma.car.findMany({
-      take: limit,
-      where: { isAvailable: true },
-      include: {
-        images: true,
-        agency: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+  async findAll(limit: number, page: number, category?: CarCategory) {
+    const [cars, totalCount] = await Promise.all([
+      this.prisma.car.findMany({
+        take: limit,
+        skip: (page - 1) * limit,
+        where: {
+          category: category,
+        },
+        include: {
+          images: true,
+          agency: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.car.count({
+        where: { category },
+      }),
+    ]);
+
+    return {
+      cars,
+      totalPages: Math.ceil(totalCount / limit),
+    };
   }
 
   async findCarById(carId: number): Promise<Car | null> {
@@ -50,9 +63,11 @@ export class CarsService {
     }));
 
     const { agencyId: ignoredId, ...carDataWithoutAgentId } = carData;
-    const newCar: Car = await this.prisma.car.create({
+
+    const newCar = await this.prisma.car.create({
       data: {
         ...carDataWithoutAgentId,
+        category: carDataWithoutAgentId.category,
         images: { create: imageData },
         agency: { connect: { id: agencyId } },
       },
@@ -88,7 +103,6 @@ export class CarsService {
       where: { id: carId },
       data: {
         ...carDataWithoutAgencyId,
-
         ...(imageFiles && {
           images: { create: imageDatas },
         }),

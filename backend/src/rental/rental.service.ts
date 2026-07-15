@@ -20,6 +20,21 @@ export class RentalService {
     { carId, startDate, endDate, notes }: CreateRent,
     customerId: number,
   ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: customerId },
+      select: { isVerified: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.isVerified) {
+      throw new ForbiddenException(
+        'Your account is not verified. Please verify your account to proceed with booking.',
+      );
+    }
+
     if (startDate >= endDate)
       throw new BadRequestException('End date must be after start date');
 

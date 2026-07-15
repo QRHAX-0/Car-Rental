@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -282,5 +283,25 @@ export class AuthService {
     });
 
     return updatedUser;
+  }
+
+  async toggleVerification(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isVerified: !user.isVerified },
+    });
+
+    return {
+      message: 'Verification status updated successfully',
+      isVerified: updatedUser.isVerified,
+    };
   }
 }

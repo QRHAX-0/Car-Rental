@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import AuthModal from "./AuthModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { api } from "@/utils/api";
-
-// إعدادات الـ API عشان نكلم الباك إند ونبعت الكوكيز
 
 const navVariants = {
   hidden: { y: -100 },
@@ -18,44 +15,47 @@ export default function TopNavBar() {
   const currentPath = location.pathname;
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState("login");
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const queryClient = useQueryClient();
 
-  // 1. جلب بيانات اليوزر من الباك إند
   const { data: userProfile, isError } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
       const res = await api.get("/auth/profile");
       return res.data;
     },
-    retry: false, // لو مش مسجل دخول، متعملش ريكويستات تانية
+    retry: false,
   });
 
-  // تحديد هل اليوزر موجود فعلاً ولا لأ
   const user = !isError && userProfile ? userProfile : null;
 
   const openLogin = () => {
     setAuthModalMode("login");
     setIsAuthModalOpen(true);
+    setIsMobileMenuOpen(false); 
   };
 
   const openRegister = () => {
     setAuthModalMode("register");
     setIsAuthModalOpen(true);
+    setIsMobileMenuOpen(false);
   };
 
-  // 2. دالة تسجيل الخروج
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout"); // بنكلم مسار الـ logout في الباك
-      queryClient.setQueryData(["userProfile"], null); // بنفضي الكاش فوراً
+      await api.post("/auth/logout");
+      queryClient.setQueryData(["userProfile"], null);
+      setIsMobileMenuOpen(false);
     } catch (error) {
       console.error("Logout failed", error);
     }
   };
 
-  // Close modal on navigation
   useEffect(() => {
     setIsAuthModalOpen(false);
+    setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
   return (
@@ -95,8 +95,9 @@ export default function TopNavBar() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            {/* 3. اللوجيك الديناميكي بتاع عرض الزراير أو البروفايل */}
+
+          {/* أخفينا الجزء ده في الموبايل عشان هيتحط في القائمة */}
+          <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
@@ -139,7 +140,92 @@ export default function TopNavBar() {
               )}
             </div>
           </div>
+
+         
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden text-slate-600 dark:text-slate-300 p-2 focus:outline-none"
+          >
+            <span className="material-symbols-outlined text-3xl">
+              {isMobileMenuOpen ? "close" : "menu"}
+            </span>
+          </button>
         </div>
+
+        
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50"
+            >
+              <div className="flex flex-col px-6 py-4 gap-4">
+                <Link
+                  className={`font-semibold py-2 transition-all duration-300 ${currentPath === "/" ? "text-primary" : "text-slate-500 dark:text-slate-400"}`}
+                  to="/"
+                >
+                  Home
+                </Link>
+                <Link
+                  className={`font-semibold py-2 transition-all duration-300 ${currentPath === "/cars" ? "text-primary" : "text-slate-500 dark:text-slate-400"}`}
+                  to="/cars"
+                >
+                  Fleet
+                </Link>
+                <Link
+                  className={`font-semibold py-2 transition-all duration-300 ${currentPath === "/my-bookings" ? "text-primary" : "text-slate-500 dark:text-slate-400"}`}
+                  to="/my-bookings"
+                >
+                  My Bookings
+                </Link>
+
+                <div className="h-px bg-slate-200/50 dark:bg-slate-800/50 my-2"></div>
+
+                {user ? (
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      to="/profile"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-slate-800"
+                    >
+                      <span className="material-symbols-outlined text-primary text-xl">
+                        person
+                      </span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {user.name || "Profile"}
+                      </span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center justify-center gap-2 px-4 py-2 text-red-500 bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-xl">
+                        logout
+                      </span>
+                      <span className="font-semibold">Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={openLogin}
+                      className="w-full text-slate-700 dark:text-slate-300 font-medium px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 transition-colors"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={openRegister}
+                      className="w-full bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all duration-300 shadow-lg shadow-primary/10"
+                    >
+                      Register
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       <AuthModal

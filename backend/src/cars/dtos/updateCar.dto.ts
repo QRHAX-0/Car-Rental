@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Transmission } from '@prisma/client';
+import { CarCategory, Transmission } from '@prisma/client';
 
 export class UpdateCarDataDTO {
   @IsOptional()
@@ -30,7 +30,7 @@ export class UpdateCarDataDTO {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  category?: string;
+  category?: CarCategory;
 
   @IsOptional()
   @Type(() => Number)

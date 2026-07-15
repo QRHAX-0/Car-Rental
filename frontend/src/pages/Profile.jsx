@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // --- UPDATED ---
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/utils/api";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast"; // --- NEW ---
+import toast from "react-hot-toast";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -10,7 +10,7 @@ const fadeInUp = {
 };
 
 export default function Profile() {
-  const queryClient = useQueryClient(); // --- NEW: عشان نتحكم في الكاش ---
+  const queryClient = useQueryClient();
 
   // 1. جلب بيانات البروفايل
   const {
@@ -46,7 +46,7 @@ export default function Profile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- NEW: الـ Mutation المسؤول عن التحديث الفعلي وحقن الداتا في الكاش ---
+  // الميوتيشن الخاص بتحديث البيانات الشخصية
   const updateProfileMutation = useMutation({
     mutationFn: async (updatedData) => {
       const res = await api.patch("/auth/profile", updatedData);
@@ -54,9 +54,6 @@ export default function Profile() {
     },
     onSuccess: (updatedUserData) => {
       toast.success("Profile updated successfully!");
-
-      // السطر ده هو السحر! بيحدث كاش ريأكت كويري فوراً بالبيانات الجديدة
-      // فـالاسم يتغير في الـ Navbar وفي الكارت في نفس اللحظة بدون ريفريش
       queryClient.setQueryData(["userProfile"], updatedUserData);
     },
     onError: (error) => {
@@ -67,13 +64,29 @@ export default function Profile() {
     },
   });
 
+  // --- NEW: الميوتيشن الخاص بتغيير حالة التوثيق ---
+  const toggleVerification = useMutation({
+    mutationFn: async () => {
+      const res = await api.patch("/auth/toggle-verify");
+      return res.data;
+    },
+    onSuccess: (data) => {
+      // بنحدث الكاش عشان علامة الصح تظهر أو تختفي فوراً
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      toast.success(
+        data.isVerified ? "Account is now Verified!" : "Verification removed.",
+      );
+    },
+    onError: () => {
+      toast.error("Failed to update verification status.");
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // تنفيذ الـ mutation وإرسال الداتا للباك إند
     updateProfileMutation.mutate(formData);
   };
 
-  // حالة التحميل (Loading UI)
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-background">
@@ -84,7 +97,6 @@ export default function Profile() {
     );
   }
 
-  // حالة الخطأ (Error UI)
   if (isError) {
     return (
       <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-background">
@@ -110,13 +122,13 @@ export default function Profile() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* الكارت الأول: كارت البيانات المختصرة والصورة */}
           <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
-            className="md:col-span-1"
+            className="md:col-span-1 flex flex-col gap-6"
           >
+            {/* الكارت الأول: كارت البيانات المختصرة والصورة */}
             <div className="bg-white p-8 rounded-[2rem] border border-slate-100 ambient-shadow flex flex-col items-center text-center">
               <div className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-primary/10 border-4 border-white shadow-lg flex items-center justify-center shrink-0">
                 {user?.image ? (
@@ -139,6 +151,48 @@ export default function Profile() {
               <span className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                 {user?.role || "USER"}
               </span>
+            </div>
+
+            {/* --- NEW: كارت التوثيق (Account Status) --- */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 ambient-shadow flex flex-col items-center text-center">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2 justify-center mb-2">
+                Account Status
+                {user?.isVerified ? (
+                  <span className="material-symbols-outlined text-green-500 text-xl">
+                    verified
+                  </span>
+                ) : (
+                  <span className="material-symbols-outlined text-amber-500 text-xl">
+                    pending_actions
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-500 mb-6">
+                {user?.isVerified
+                  ? "Verified. You can book cars."
+                  : "Pending. Booking restricted."}
+              </p>
+
+              <button
+                onClick={() => toggleVerification.mutate()}
+                disabled={toggleVerification.isPending}
+                className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
+                  ${
+                    user?.isVerified
+                      ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                      : "bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"
+                  }`}
+              >
+                {toggleVerification.isPending ? (
+                  <span className="material-symbols-outlined animate-spin text-sm">
+                    progress_activity
+                  </span>
+                ) : user?.isVerified ? (
+                  "Revoke Verification"
+                ) : (
+                  "Verify Now"
+                )}
+              </button>
             </div>
           </motion.div>
 
@@ -200,7 +254,6 @@ export default function Profile() {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex justify-end">
-                  {/* أضفنا هنا حالة الـ Loading للزرار عشان يتقفل واليوزر ميتكش كذا مرة */}
                   <button
                     type="submit"
                     disabled={updateProfileMutation.isPending}
