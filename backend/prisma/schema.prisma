@@ -59,6 +59,7 @@ model User {
   image                String?   @default("")
   hashedRefreshToken   String?
   role                 Role      @default(USER)
+  isActive             Boolean   @default(true)
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
 
@@ -69,7 +70,7 @@ model User {
   pickupRental Rental[] @relation("PickupStaff")
   returnRental Rental[] @relation("ReturnStaff")
 
-  agency   Agency? @relation(fields: [agencyId], references: [id])
+  agency   Agency? @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   agencyId Int?
 
   createdAt DateTime @default(now())

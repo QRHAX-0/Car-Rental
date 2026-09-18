@@ -2,6 +2,7 @@
 
 import {
   BookingStatus,
+  CarCategory,
   PrismaClient,
   Role,
   Transmission,
@@ -63,6 +64,7 @@ async function main() {
       phoneNumber: '+20123456789',
       password: hashedPassword,
       role: Role.SUPER_ADMIN,
+      isActive: true,
     },
   });
 
@@ -74,6 +76,7 @@ async function main() {
       phoneNumber: '+20223456789',
       role: Role.ADMIN,
       agencyId: agencyAlpha.id,
+      isActive: true,
     },
   });
 
@@ -85,6 +88,7 @@ async function main() {
       role: Role.AGENT,
       agencyId: agencyAlpha.id,
       phoneNumber: '+20323456789',
+      isActive: true,
     },
   });
 
@@ -96,6 +100,7 @@ async function main() {
       role: Role.ADMIN,
       agencyId: agencyBeta.id,
       phoneNumber: '+20423456789',
+      isActive: true,
     },
   });
 
@@ -107,6 +112,7 @@ async function main() {
       role: Role.ADMIN,
       agencyId: agencyGamma.id,
       phoneNumber: '+20623456789',
+      isActive: true,
     },
   });
 
@@ -118,6 +124,7 @@ async function main() {
       role: Role.ADMIN,
       agencyId: agencyDelta.id,
       phoneNumber: '+20723456789',
+      isActive: true,
     },
   });
 
@@ -129,6 +136,7 @@ async function main() {
       role: Role.ADMIN,
       agencyId: agencyOmega.id,
       phoneNumber: '+20823456789',
+      isActive: true,
     },
   });
 
@@ -139,6 +147,7 @@ async function main() {
       password: hashedPassword,
       role: Role.USER,
       phoneNumber: '+20523456789',
+      isActive: true,
     },
   });
 
@@ -494,7 +503,7 @@ Tech: 360-degree bird's-eye camera system`,
         brand: car.brand,
         year: car.year,
         pricePerDay: car.pricePerDay,
-        category: car.category as any,
+        category: car.category as CarCategory,
         seatingCapacity: car.seatingCapacity,
         fuelType: car.fuelType,
         transmission: car.transmission,

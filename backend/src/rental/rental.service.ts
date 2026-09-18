@@ -19,6 +19,7 @@ export class RentalService {
   async createRent(
     { carId, startDate, endDate, notes }: CreateRent,
     customerId: number,
+    isAdminBooking: boolean = false,
   ) {
     const user = await this.prisma.user.findUnique({
       where: { id: customerId },
@@ -29,7 +30,7 @@ export class RentalService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.isVerified) {
+    if (!user.isVerified && !isAdminBooking) {
       throw new ForbiddenException(
         'Your account is not verified. Please verify your account to proceed with booking.',
       );
@@ -141,25 +142,32 @@ export class RentalService {
     this.validateAgencyOwnership(rental.car.agencyId, user);
 
     const now = new Date();
-    const daysToCharge = Math.abs(
-      Math.max(
-        1,
-        Math.ceil(
-          (now.getTime() - rental.startDate.getTime()) / (1000 * 60 * 60 * 24),
-        ),
-      ),
-    );
 
-    let finalPrice = daysToCharge * +rental.car.pricePerDay;
+    // 1. نعتمد على السعر الأساسي اللي اتسجل وقت الحجز كإيراد ثابت
+    let finalPrice = Number(rental.totalPrice);
 
-    if (additionalCharges) finalPrice += additionalCharges;
+    // 2. حساب أيام التأخير لو العميل رجع العربية بعد ميعاد الـ endDate
+    if (now > rental.endDate) {
+      const extraDays = Math.ceil(
+        (now.getTime() - rental.endDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      // حساب الغرامة (أيام التأخير * سعر اليوم)
+      const latePenalty = extraDays * Number(rental.car.pricePerDay);
+      finalPrice += latePenalty;
+    }
 
+    // 3. إضافة أي رسوم إضافية (تلفيات، غسيل، بنزين)
+    if (additionalCharges) {
+      finalPrice += Number(additionalCharges);
+    }
+
+    // 4. تحديث حالة الحجز في الداتا بيز
     return this.prisma.rental.update({
       where: { id: rentalId },
       data: {
         status: 'COMPLETED',
         returnStaffId: user.id,
-        totalPrice: finalPrice,
+        totalPrice: finalPrice, // السعر كده عمره ما هيقل
         endMileage,
         returnFuel: fuelLevel,
         notes,
@@ -271,5 +279,18 @@ export class RentalService {
     }
 
     return rental;
+  }
+
+  async getAgencyBookings(agencyId: number) {
+    return this.prisma.rental.findMany({
+      where: {
+        car: { agencyId: agencyId },
+      },
+      include: {
+        car: { select: { model: true, brand: true, images: true } },
+        customer: { select: { name: true, email: true, phoneNumber: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

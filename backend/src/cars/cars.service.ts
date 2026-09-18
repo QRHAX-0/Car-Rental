@@ -50,6 +50,7 @@ export class CarsService {
   async findCarsByAgency(agencyId: number): Promise<Car[]> {
     return await this.prisma.car.findMany({
       where: { agencyId },
+      include: { images: true },
     });
   }
 
